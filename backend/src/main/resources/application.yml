@@ -1,0 +1,52 @@
+server:
+    port: 8080
+
+spring:
+    application:
+        name: shopease-checkout
+    datasource:
+        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/shopease}
+        username: ${SPRING_DATASOURCE_USERNAME:shopease}
+        password: ${SPRING_DATASOURCE_PASSWORD:shopease_secret}
+        driver-class-name: org.postgresql.Driver
+    jpa:
+        hibernate:
+            ddl-auto: validate
+        open-in-view: false
+        properties:
+            hibernate:
+                format_sql: true
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+    flyway:
+        enabled: true
+        locations: classpath:db/migration
+
+# ─── JWT ────────────────────────────────────────────────
+jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: 86400000  # 24 hours
+
+# ─── AWS SES ───────────────────────────────────────────
+aws:
+    ses:
+        region: ${AWS_SES_REGION}
+        from-email: ${AWS_SES_FROM_EMAIL}
+
+# ─── Hubtel SMS ─────────────────────────────────────────
+hubtel:
+    client-id: ${HUBTEL_CLIENT_ID:}
+    client-secret: ${HUBTEL_CLIENT_SECRET:}
+    from: ${HUBTEL_FROM:ShopEase}
+    base-url: https://smsc.hubtel.com/v1/messages/send
+
+# ─── Slack ──────────────────────────────────────────────
+slack:
+    webhook-url: ${SLACK_WEBHOOK_URL:}
+
+# ─── OpenAPI / Swagger ──────────────────────────────────
+springdoc:
+    api-docs:
+        path: /api-docs
+    swagger-ui:
+        path: /swagger-ui.html
+        operations-sorter: method
