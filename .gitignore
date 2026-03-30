@@ -20,3 +20,6 @@ Thumbs.db
 
 # Env
 .env
+/backend/.mvn/wrapper/maven-wrapper.properties
+/backend/mvnw
+/CLAUDE.md
