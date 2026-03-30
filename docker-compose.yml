@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: shopease-db
+    environment:
+      POSTGRES_DB: shopease
+      POSTGRES_USER: shopease
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-shopease_secret}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shopease"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: shopease-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/shopease
+      SPRING_DATASOURCE_USERNAME: shopease
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-shopease_secret}
+      JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-key-change-in-production-min-256-bits-long!!}
+      # AWS SES
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SES_REGION: ${AWS_SES_REGION:-eu-west-1}
+      AWS_SES_FROM_EMAIL: ${AWS_SES_FROM_EMAIL:-noreply@shopease.dev}
+      # Hubtel SMS
+      HUBTEL_CLIENT_ID: ${HUBTEL_CLIENT_ID}
+      HUBTEL_CLIENT_SECRET: ${HUBTEL_CLIENT_SECRET}
+      HUBTEL_FROM: ${HUBTEL_FROM:-ShopEase}
+      # Slack
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: shopease-ui
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  pgdata:
