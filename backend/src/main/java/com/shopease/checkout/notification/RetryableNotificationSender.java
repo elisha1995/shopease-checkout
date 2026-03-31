@@ -3,11 +3,12 @@ package com.shopease.checkout.notification;
 import com.shopease.checkout.common.model.NotificationChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
  * DECORATOR PATTERN + EXTRA WHAT-IF: "What if a channel fails?"
- *
+ * <p>
  * Wraps any NotificationSender with retry logic. If retries are exhausted,
  * falls back to Email. The wrapped sender doesn't know it's being retried.
  */
@@ -15,16 +16,17 @@ import org.springframework.stereotype.Component;
 public class RetryableNotificationSender {
 
     private static final Logger log = LoggerFactory.getLogger(RetryableNotificationSender.class);
-    private static final int DEFAULT_MAX_RETRIES = 3;
 
     private final NotificationSenderFactory factory;
+    private final int maxRetries;
 
-    public RetryableNotificationSender(NotificationSenderFactory factory) {
+    public RetryableNotificationSender(NotificationSenderFactory factory, @Value("${notification.max-retries}") int maxRetries) {
         this.factory = factory;
+        this.maxRetries = maxRetries;
     }
 
     public NotificationResult sendWithRetry(NotificationChannel channel, NotificationPayload payload) {
-        return sendWithRetry(channel, payload, DEFAULT_MAX_RETRIES);
+        return sendWithRetry(channel, payload, maxRetries);
     }
 
     public NotificationResult sendWithRetry(NotificationChannel channel, NotificationPayload payload, int maxRetries) {

@@ -7,4 +7,5 @@ public record NotificationPayload(
         String subject,
         String body,
         String orderId
-) {}
+) {
+}

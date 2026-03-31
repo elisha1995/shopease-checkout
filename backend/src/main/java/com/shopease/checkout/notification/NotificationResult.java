@@ -7,4 +7,5 @@ public record NotificationResult(
         boolean success,
         String message,
         int attempts
-) {}
+) {
+}

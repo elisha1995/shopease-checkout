@@ -24,7 +24,7 @@ class RetryableNotificationSenderTest {
 
     @Test void shouldSucceedOnFirstAttempt() {
         var factory = new NotificationSenderFactory(List.of(stubSender(NotificationChannel.EMAIL)));
-        var retryable = new RetryableNotificationSender(factory);
+        var retryable = new RetryableNotificationSender(factory, 3);
         NotificationResult result = retryable.sendWithRetry(NotificationChannel.EMAIL, payload);
         assertTrue(result.success());
         assertEquals(1, result.attempts());
@@ -38,8 +38,8 @@ class RetryableNotificationSenderTest {
             }
         };
         var factory = new NotificationSenderFactory(List.of(failingSms, stubSender(NotificationChannel.EMAIL)));
-        var retryable = new RetryableNotificationSender(factory);
-        NotificationResult result = retryable.sendWithRetry(NotificationChannel.SMS, payload, 3);
+        var retryable = new RetryableNotificationSender(factory, 3);
+        NotificationResult result = retryable.sendWithRetry(NotificationChannel.SMS, payload);
         assertTrue(result.success());
         assertEquals(NotificationChannel.EMAIL, result.channel());
         assertEquals(4, result.attempts());
@@ -49,28 +49,28 @@ class RetryableNotificationSenderTest {
     @Test void shouldRetryExactlyMaxTimes() {
         int[] callCount = {0};
         NotificationSender countingSender = new NotificationSender() {
-            @Override public NotificationChannel getChannel() { return NotificationChannel.PUSH; }
+            @Override public NotificationChannel getChannel() { return NotificationChannel.SMS; }
             @Override public NotificationResult send(NotificationPayload p) {
                 callCount[0]++;
-                return new NotificationResult(NotificationChannel.PUSH, false, "Failed", 1);
+                return new NotificationResult(NotificationChannel.SMS, false, "Failed", 1);
             }
         };
         var factory = new NotificationSenderFactory(List.of(countingSender, stubSender(NotificationChannel.EMAIL)));
-        var retryable = new RetryableNotificationSender(factory);
-        retryable.sendWithRetry(NotificationChannel.PUSH, payload, 3);
+        var retryable = new RetryableNotificationSender(factory, 3);
+        retryable.sendWithRetry(NotificationChannel.SMS, payload);
         assertEquals(3, callCount[0]);
     }
 
     @Test void shouldHandleExceptionInSender() {
         NotificationSender throwingSender = new NotificationSender() {
-            @Override public NotificationChannel getChannel() { return NotificationChannel.SLACK; }
+            @Override public NotificationChannel getChannel() { return NotificationChannel.SMS; }
             @Override public NotificationResult send(NotificationPayload p) {
                 throw new RuntimeException("Connection refused");
             }
         };
         var factory = new NotificationSenderFactory(List.of(throwingSender, stubSender(NotificationChannel.EMAIL)));
-        var retryable = new RetryableNotificationSender(factory);
-        NotificationResult result = retryable.sendWithRetry(NotificationChannel.SLACK, payload, 2);
+        var retryable = new RetryableNotificationSender(factory, 2);
+        NotificationResult result = retryable.sendWithRetry(NotificationChannel.SMS, payload);
         assertTrue(result.success());
         assertEquals(NotificationChannel.EMAIL, result.channel());
     }
@@ -83,8 +83,8 @@ class RetryableNotificationSenderTest {
             }
         };
         var factory = new NotificationSenderFactory(List.of(failingEmail));
-        var retryable = new RetryableNotificationSender(factory);
-        NotificationResult result = retryable.sendWithRetry(NotificationChannel.EMAIL, payload, 2);
+        var retryable = new RetryableNotificationSender(factory, 2);
+        NotificationResult result = retryable.sendWithRetry(NotificationChannel.EMAIL, payload);
         assertFalse(result.success());
         assertEquals(2, result.attempts());
     }
