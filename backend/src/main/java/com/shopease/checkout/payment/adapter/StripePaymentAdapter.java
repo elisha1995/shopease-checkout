@@ -11,7 +11,7 @@ import java.util.UUID;
 /**
  * ADAPTER PATTERN: Converts Stripe's unique API response shape
  * into our standardized PaymentResult.
- *
+ * <p>
  * In a real app, this would call the actual Stripe SDK.
  * Here we simulate the external call and demonstrate the pattern.
  */

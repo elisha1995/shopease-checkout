@@ -42,7 +42,7 @@ public class CryptoPaymentAdapter implements PaymentProcessor {
 
     private CryptoApiResponse simulateCryptoCall(PaymentRequest request) {
         return new CryptoApiResponse(
-                "0x" + UUID.randomUUID().toString().replace("-", "").substring(0, 40),
+                "0x" + UUID.randomUUID().toString().replace("-", ""),
                 request.amount() > 0 ? 6 : 0,
                 request.amount() > 0,
                 request.amount(),
