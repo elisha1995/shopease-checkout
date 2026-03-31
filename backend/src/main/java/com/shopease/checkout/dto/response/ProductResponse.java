@@ -8,4 +8,5 @@ public record ProductResponse(
         double price,
         String imageUrl,
         String category
-) {}
+) {
+}

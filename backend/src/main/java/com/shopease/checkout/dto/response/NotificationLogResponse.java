@@ -5,4 +5,5 @@ public record NotificationLogResponse(
         boolean success,
         String message,
         int attempts
-) {}
+) {
+}

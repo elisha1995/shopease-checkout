@@ -3,7 +3,7 @@ package com.shopease.checkout.dto.response;
 import java.util.List;
 
 public record OrderResponse(
-        String id,
+        String orderNumber,
         String userId,
         List<OrderItemResponse> items,
         double subtotal,
@@ -16,4 +16,5 @@ public record OrderResponse(
         String status,
         String createdAt,
         List<NotificationLogResponse> notifications
-) {}
+) {
+}

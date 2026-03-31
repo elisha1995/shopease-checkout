@@ -8,4 +8,5 @@ public record ShippingQuoteResponse(
         double baseCost,
         double finalCost,
         List<String> appliedDiscounts
-) {}
+) {
+}

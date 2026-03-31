@@ -4,4 +4,5 @@ public record OrderItemResponse(
         String productName,
         double price,
         int quantity
-) {}
+) {
+}

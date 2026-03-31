@@ -9,4 +9,5 @@ public record UserProfileResponse(
         String phone,
         String tier,
         List<String> notificationPreferences
-) {}
+) {
+}
