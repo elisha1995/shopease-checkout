@@ -33,7 +33,7 @@ public final class OrderMapper {
                 .toList();
 
         return new OrderResponse(
-                entity.getId(),
+                entity.getOrderNumber(),
                 entity.getUser().getId().toString(),
                 items,
                 entity.getSubtotal().doubleValue(),
