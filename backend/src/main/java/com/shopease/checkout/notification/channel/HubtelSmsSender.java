@@ -85,12 +85,21 @@ public class HubtelSmsSender implements NotificationSender {
                         "SMS sent via Hubtel to " + phone, 1
                 );
             } else {
-                log.error("[HUBTEL] SMS failed | Status: {} | Body: {}", response.statusCode(), response.body());
+                int status = response.statusCode();
+                String body = response.body();
+                log.error("[HUBTEL] SMS failed | Status: {} | Body: {}", status, body);
                 return new NotificationResult(
                         NotificationChannel.SMS, false,
-                        "Hubtel returned " + response.statusCode() + ": " + response.body(), 1
+                        "Hubtel returned %d: %s".formatted(status, body), 1
                 );
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("[HUBTEL] SMS interrupted: {}", e.getMessage());
+            return new NotificationResult(
+                    NotificationChannel.SMS, false,
+                    "SMS failed: interrupted", 1
+            );
         } catch (Exception e) {
             log.error("[HUBTEL] SMS error: {}", e.getMessage());
             return new NotificationResult(
@@ -102,7 +111,7 @@ public class HubtelSmsSender implements NotificationSender {
 
     private String escapeJson(String text) {
         return text.replace("\\", "\\\\")
-                   .replace("\"", "\\\"")
-                   .replace("\n", "\\n");
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n");
     }
 }

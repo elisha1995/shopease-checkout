@@ -8,9 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ses.SesClient;
-import software.amazon.awssdk.services.ses.model.*;
+import software.amazon.awssdk.services.ses.model.SendEmailRequest;
+import software.amazon.awssdk.services.ses.model.SendEmailResponse;
+import software.amazon.awssdk.services.ses.model.SesException;
 
 @Component
 public class AwsSesEmailSender implements NotificationSender {
@@ -25,6 +28,7 @@ public class AwsSesEmailSender implements NotificationSender {
             @Value("${aws.ses.from-email}") String fromEmail) {
         this.sesClient = SesClient.builder()
                 .region(Region.of(region))
+                .credentialsProvider(DefaultCredentialsProvider.builder().build())
                 .build();
         this.fromEmail = fromEmail;
     }
@@ -39,21 +43,11 @@ public class AwsSesEmailSender implements NotificationSender {
         try {
             SendEmailRequest request = SendEmailRequest.builder()
                     .source(fromEmail)
-                    .destination(Destination.builder()
-                            .toAddresses(payload.recipientEmail())
-                            .build())
-                    .message(Message.builder()
-                            .subject(Content.builder()
-                                    .data(payload.subject())
-                                    .charset("UTF-8")
-                                    .build())
-                            .body(Body.builder()
-                                    .text(Content.builder()
-                                            .data(payload.body())
-                                            .charset("UTF-8")
-                                            .build())
-                                    .build())
-                            .build())
+                    .destination(d -> d.toAddresses(payload.recipientEmail()))
+                    .message(m -> m
+                            .subject(s -> s.data(payload.subject()).charset("UTF-8"))
+                            .body(b -> b
+                                    .text(t -> t.data(payload.body()).charset("UTF-8"))))
                     .build();
 
             SendEmailResponse response = sesClient.sendEmail(request);
