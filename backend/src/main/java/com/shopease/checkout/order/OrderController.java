@@ -4,16 +4,14 @@ import com.shopease.checkout.dto.request.CheckoutRequest;
 import com.shopease.checkout.dto.response.CheckoutResponse;
 import com.shopease.checkout.dto.response.OrderResponse;
 import com.shopease.checkout.dto.response.ProductResponse;
-import com.shopease.checkout.dto.response.UserProfileResponse;
 import com.shopease.checkout.entity.UserEntity;
 import com.shopease.checkout.mapper.ProductMapper;
-import com.shopease.checkout.mapper.UserMapper;
 import com.shopease.checkout.repository.ProductRepository;
-import com.shopease.checkout.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -23,19 +21,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 @Tag(name = "Orders & Products")
+@RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
     private final ProductRepository productRepository;
-    private final UserRepository userRepository;
-
-    public OrderController(OrderService orderService,
-                           ProductRepository productRepository,
-                           UserRepository userRepository) {
-        this.orderService = orderService;
-        this.productRepository = productRepository;
-        this.userRepository = userRepository;
-    }
 
     @PostMapping("/orders/checkout")
     @Operation(summary = "Checkout", security = @SecurityRequirement(name = "bearerAuth"))
@@ -46,10 +36,10 @@ public class OrderController {
         return result.success() ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
 
-    @GetMapping("/orders/{id}")
+    @GetMapping("/orders/{orderNumber}")
     @Operation(summary = "Get order details", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<OrderResponse> getOrder(@PathVariable String id) {
-        return orderService.findById(id)
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable String orderNumber) {
+        return orderService.findByOrderNumber(orderNumber)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -66,14 +56,6 @@ public class OrderController {
     public List<ProductResponse> getProducts() {
         return productRepository.findByActiveTrue().stream()
                 .map(ProductMapper::toResponse)
-                .toList();
-    }
-
-    @GetMapping("/users")
-    @Operation(summary = "List demo users (for account switching)")
-    public List<UserProfileResponse> getUsers() {
-        return userRepository.findAll().stream()
-                .map(UserMapper::toProfileResponse)
                 .toList();
     }
 }

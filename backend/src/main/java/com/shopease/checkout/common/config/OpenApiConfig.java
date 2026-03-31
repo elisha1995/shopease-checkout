@@ -25,7 +25,7 @@ public class OpenApiConfig {
                         .description("""
                                 Mini e-commerce checkout system demonstrating design patterns:
                                 Strategy, Factory, Adapter, Observer, and Decorator.
-
+                                
                                 Register a new account to get started. Available tiers: STANDARD, GOLD.
                                 """)
                         .version("1.0.0")

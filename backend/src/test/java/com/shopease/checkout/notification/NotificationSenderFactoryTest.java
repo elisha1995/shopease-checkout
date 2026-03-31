@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class NotificationSenderFactoryTest {
 
-    // Stub senders for testing — real senders need AWS/Hubtel/Slack credentials
+    // Stub senders for testing — real senders need AWS/Hubtel credentials
     static NotificationSender stubSender(NotificationChannel ch) {
         return new NotificationSender() {
             @Override public NotificationChannel getChannel() { return ch; }
@@ -21,9 +21,7 @@ class NotificationSenderFactoryTest {
 
     private final NotificationSenderFactory factory = new NotificationSenderFactory(List.of(
             stubSender(NotificationChannel.EMAIL),
-            stubSender(NotificationChannel.SMS),
-            stubSender(NotificationChannel.PUSH),
-            stubSender(NotificationChannel.SLACK)
+            stubSender(NotificationChannel.SMS)
     ));
 
     @Test void shouldCreateEmailSender() {
@@ -32,14 +30,6 @@ class NotificationSenderFactoryTest {
 
     @Test void shouldCreateSmsSender() {
         assertEquals(NotificationChannel.SMS, factory.create(NotificationChannel.SMS).getChannel());
-    }
-
-    @Test void shouldCreatePushSender() {
-        assertEquals(NotificationChannel.PUSH, factory.create(NotificationChannel.PUSH).getChannel());
-    }
-
-    @Test void shouldCreateSlackSender() {
-        assertEquals(NotificationChannel.SLACK, factory.create(NotificationChannel.SLACK).getChannel());
     }
 
     @Test void shouldReturnEmailAsFallback() {
