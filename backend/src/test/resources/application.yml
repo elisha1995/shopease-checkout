@@ -1,30 +1,40 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.H2Dialect
-  flyway:
-    enabled: false
+    datasource:
+        url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+        driver-class-name: org.h2.Driver
+        username: sa
+        password:
+    jpa:
+        hibernate:
+            ddl-auto: create-drop
+        database-platform: org.hibernate.dialect.H2Dialect
+    flyway:
+        enabled: false
 
 jwt:
-  secret: test-secret-key-must-be-at-least-256-bits-long-for-hmac-sha256!!
-  expiration-ms: 86400000
+    secret: test-secret-key-must-be-at-least-256-bits-long-for-hmac-sha256!!
+    expiration-ms: 86400000
 
 aws:
-  ses:
-    region: us-east-1
-    from-email: test@test.com
+    ses:
+        region: us-east-1
+        from-email: test@test.com
 
 hubtel:
-  client-id: test
-  client-secret: test
-  from: Test
-  base-url: https://smsc.hubtel.com/v1/messages/send
+    client-id: test
+    client-secret: test
+    from: Test
+    base-url: https://smsc.hubtel.com/v1/messages/send
 
-slack:
-  webhook-url: ""
+shipping:
+    free-threshold: 50.0
+    gold-discount-percent: 20
+
+currency:
+    rates:
+        USD: 1.0
+        GHS: 15.5
+        EUR: 0.92
+
+notification:
+    max-retries: 3

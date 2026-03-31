@@ -20,6 +20,12 @@ spring:
     flyway:
         enabled: true
         locations: classpath:db/migration
+    task:
+        execution:
+            pool:
+                core-size: 2
+                max-size: 5
+                queue-capacity: 25
 
 # ─── JWT ────────────────────────────────────────────────
 jwt:
@@ -39,9 +45,21 @@ hubtel:
     from: ${HUBTEL_FROM:ShopEase}
     base-url: https://smsc.hubtel.com/v1/messages/send
 
-# ─── Slack ──────────────────────────────────────────────
-slack:
-    webhook-url: ${SLACK_WEBHOOK_URL:}
+# ─── Shipping Discounts ────────────────────────────────
+shipping:
+    free-threshold: 50.0
+    gold-discount-percent: 20
+
+# ─── Currency Exchange Rates ───────────────────────────
+currency:
+    rates:
+        USD: 1.0
+        GHS: 15.5
+        EUR: 0.92
+
+# ─── Notifications ─────────────────────────────────────
+notification:
+    max-retries: 3
 
 # ─── OpenAPI / Swagger ──────────────────────────────────
 springdoc:

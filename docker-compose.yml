@@ -39,9 +39,7 @@ services:
       # Hubtel SMS
       HUBTEL_CLIENT_ID: ${HUBTEL_CLIENT_ID}
       HUBTEL_CLIENT_SECRET: ${HUBTEL_CLIENT_SECRET}
-      HUBTEL_FROM: ${HUBTEL_FROM}
-      # Slack
-      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      HUBTEL_FROM: ${HUBTEL_FROM:-ShopEase}
 
   frontend:
     build:
