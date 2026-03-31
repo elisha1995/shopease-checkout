@@ -6,31 +6,33 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/shipping")
 @Tag(name = "Shipping")
+@RequiredArgsConstructor
 public class ShippingController {
 
     private final ShippingService shippingService;
 
-    public ShippingController(ShippingService shippingService) {
-        this.shippingService = shippingService;
-    }
-
     @PostMapping("/calculate")
     @Operation(summary = "Calculate shipping cost", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> calculate(@Valid @RequestBody ShippingCalculateRequest request,
+    public ResponseEntity<Object> calculate(@Valid @RequestBody ShippingCalculateRequest request,
                                        Authentication authentication) {
-        var user = (UserEntity) authentication.getPrincipal();
-        var tier = user.getTier();
+        if (!(authentication.getPrincipal() instanceof UserEntity user)) {
+            return ResponseEntity.status(401).build();
+        }
 
         if (request.method() != null) {
-            return ResponseEntity.ok(shippingService.calculate(request.method(), request.items(), tier));
+            return ResponseEntity.ok(shippingService.calculate(request.method(), request.items(), user.getTier()));
         }
-        return ResponseEntity.ok(shippingService.calculateAll(request.items(), tier));
+        return ResponseEntity.ok(shippingService.calculateAll(request.items(), user.getTier()));
     }
 }
