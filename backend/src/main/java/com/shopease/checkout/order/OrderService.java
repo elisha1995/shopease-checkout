@@ -10,6 +10,8 @@ import java.util.Optional;
 
 public interface OrderService {
     CheckoutResponse checkout(UserEntity user, CheckoutRequest request);
-    Optional<OrderResponse> findById(String orderId);
+
+    Optional<OrderResponse> findByOrderNumber(String orderNumber);
+
     List<OrderResponse> findByUser(UserEntity user);
 }

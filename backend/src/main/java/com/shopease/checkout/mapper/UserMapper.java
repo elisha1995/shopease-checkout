@@ -15,7 +15,8 @@ import java.util.List;
  */
 public final class UserMapper {
 
-    private UserMapper() {} // Utility class — not instantiable
+    private UserMapper() {
+    } // Utility class — not instantiable
 
     public static UserEntity toEntity(RegisterRequest request, String encodedPassword) {
         var entity = new UserEntity();

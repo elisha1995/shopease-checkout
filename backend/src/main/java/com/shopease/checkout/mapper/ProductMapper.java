@@ -5,7 +5,8 @@ import com.shopease.checkout.entity.ProductEntity;
 
 public final class ProductMapper {
 
-    private ProductMapper() {}
+    private ProductMapper() {
+    }
 
     public static ProductResponse toResponse(ProductEntity entity) {
         return new ProductResponse(

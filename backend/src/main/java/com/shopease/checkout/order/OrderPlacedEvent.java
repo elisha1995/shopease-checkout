@@ -4,13 +4,15 @@ import com.shopease.checkout.common.model.Currency;
 import com.shopease.checkout.common.model.NotificationChannel;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * OBSERVER PATTERN: This event is published when an order is placed.
  * Any listener can react to it — the publisher doesn't know who's listening.
  */
 public record OrderPlacedEvent(
-        String orderId,
+        UUID orderId,
+        String orderNumber,
         String userId,
         String userName,
         String userEmail,
@@ -20,4 +22,5 @@ public record OrderPlacedEvent(
         Currency currency,
         String paymentMethod,
         String transactionId
-) {}
+) {
+}

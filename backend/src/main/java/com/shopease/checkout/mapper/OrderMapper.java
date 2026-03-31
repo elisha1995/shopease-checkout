@@ -13,7 +13,8 @@ import java.util.List;
 
 public final class OrderMapper {
 
-    private OrderMapper() {}
+    private OrderMapper() {
+    }
 
     public static OrderItemEntity toItemEntity(CartItemDto dto) {
         var entity = new OrderItemEntity();
