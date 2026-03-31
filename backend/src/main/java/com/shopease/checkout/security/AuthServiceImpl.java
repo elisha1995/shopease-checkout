@@ -7,23 +7,19 @@ import com.shopease.checkout.dto.response.UserProfileResponse;
 import com.shopease.checkout.entity.UserEntity;
 import com.shopease.checkout.mapper.UserMapper;
 import com.shopease.checkout.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-
-    public AuthServiceImpl(UserRepository userRepository,
-                           PasswordEncoder passwordEncoder,
-                           JwtService jwtService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-    }
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -33,6 +29,9 @@ public class AuthServiceImpl implements AuthService {
 
         var entity = UserMapper.toEntity(request, passwordEncoder.encode(request.password()));
         entity = userRepository.save(entity);
+
+        // Publish event to trigger welcome email (Observer pattern)
+        eventPublisher.publishEvent(new UserRegisteredEvent(entity.getFullName(), entity.getEmail()));
 
         var token = jwtService.generateToken(entity.getId(), entity.getEmail(), entity.getTier().name());
         return UserMapper.toAuthResponse(entity, token);
