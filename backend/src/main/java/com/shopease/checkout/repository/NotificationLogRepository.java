@@ -6,5 +6,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface NotificationLogRepository extends JpaRepository<NotificationLogEntity, UUID> {
-    List<NotificationLogEntity> findByOrderId(String orderId);
+    List<NotificationLogEntity> findByOrderId(UUID orderId);
 }
