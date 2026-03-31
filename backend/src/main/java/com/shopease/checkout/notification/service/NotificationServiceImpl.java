@@ -1,38 +1,31 @@
 package com.shopease.checkout.notification.service;
 
 import com.shopease.checkout.common.model.NotificationChannel;
-import com.shopease.checkout.dto.response.NotificationLogResponse;
 import com.shopease.checkout.entity.NotificationLogEntity;
-import com.shopease.checkout.mapper.OrderMapper;
-import com.shopease.checkout.notification.*;
+import com.shopease.checkout.notification.NotificationPayload;
+import com.shopease.checkout.notification.NotificationResult;
+import com.shopease.checkout.notification.RetryableNotificationSender;
 import com.shopease.checkout.repository.NotificationLogRepository;
 import com.shopease.checkout.repository.OrderRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class NotificationServiceImpl implements NotificationService {
-
-    private static final Logger log = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
     private final RetryableNotificationSender retryableSender;
     private final NotificationLogRepository logRepository;
     private final OrderRepository orderRepository;
 
-    public NotificationServiceImpl(RetryableNotificationSender retryableSender,
-                                   NotificationLogRepository logRepository,
-                                   OrderRepository orderRepository) {
-        this.retryableSender = retryableSender;
-        this.logRepository = logRepository;
-        this.orderRepository = orderRepository;
-    }
-
     @Override
-    public void sendWithRetryAndPersist(String orderId, List<NotificationChannel> channels, NotificationPayload payload) {
+    public void sendWithRetryAndPersist(UUID orderId, List<NotificationChannel> channels, NotificationPayload payload) {
         var order = orderRepository.findById(orderId).orElse(null);
         if (order == null) {
             log.warn("Cannot persist notifications — order {} not found", orderId);
@@ -61,12 +54,5 @@ public class NotificationServiceImpl implements NotificationService {
             entity.setAttempts(result.attempts());
             logRepository.save(entity);
         }
-    }
-
-    @Override
-    public List<NotificationLogResponse> getNotificationsForOrder(String orderId) {
-        return logRepository.findByOrderId(orderId).stream()
-                .map(OrderMapper::toNotificationResponse)
-                .toList();
     }
 }
