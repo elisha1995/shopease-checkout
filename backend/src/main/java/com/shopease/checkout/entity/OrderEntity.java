@@ -1,7 +1,11 @@
 package com.shopease.checkout.entity;
 
-import jakarta.persistence.*;
+import com.shopease.checkout.common.config.UUIDv7;
 import com.shopease.checkout.common.model.Currency;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -10,10 +14,16 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
+@Getter
+@Setter
 public class OrderEntity {
 
     @Id
-    private String id;
+    @UUIDv7
+    private UUID id;
+
+    @Column(name = "order_number", nullable = false, unique = true)
+    private String orderNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -44,12 +54,19 @@ public class OrderEntity {
     @Column(nullable = false)
     private String status = "CONFIRMED";
 
+    @Setter(lombok.AccessLevel.NONE)
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
+    @Setter(lombok.AccessLevel.NONE)
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt = Instant.now();
+
+    @Setter(lombok.AccessLevel.NONE)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> items = new ArrayList<>();
 
+    @Setter(lombok.AccessLevel.NONE)
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<NotificationLogEntity> notifications = new ArrayList<>();
 
@@ -65,40 +82,8 @@ public class OrderEntity {
         log.setOrder(this);
     }
 
-    // ─── Getters & Setters ────────────────────────────
-
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-
-    public UserEntity getUser() { return user; }
-    public void setUser(UserEntity user) { this.user = user; }
-
-    public BigDecimal getSubtotal() { return subtotal; }
-    public void setSubtotal(BigDecimal subtotal) { this.subtotal = subtotal; }
-
-    public BigDecimal getShippingCost() { return shippingCost; }
-    public void setShippingCost(BigDecimal shippingCost) { this.shippingCost = shippingCost; }
-
-    public BigDecimal getTotal() { return total; }
-    public void setTotal(BigDecimal total) { this.total = total; }
-
-    public Currency getCurrency() { return currency; }
-    public void setCurrency(Currency currency) { this.currency = currency; }
-
-    public String getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
-
-    public String getTransactionId() { return transactionId; }
-    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
-
-    public String getShippingMethod() { return shippingMethod; }
-    public void setShippingMethod(String shippingMethod) { this.shippingMethod = shippingMethod; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public Instant getCreatedAt() { return createdAt; }
-
-    public List<OrderItemEntity> getItems() { return items; }
-    public List<NotificationLogEntity> getNotifications() { return notifications; }
+    @PreUpdate
+    void onUpdate() {
+        this.updatedAt = Instant.now();
+    }
 }
