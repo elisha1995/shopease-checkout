@@ -3,7 +3,10 @@ package com.shopease.checkout.shipping.discount;
 import com.shopease.checkout.common.model.MembershipTier;
 import com.shopease.checkout.dto.request.CartItemDto;
 import org.springframework.stereotype.Component;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Composes all ShippingDiscountRule beans discovered by Spring.
@@ -20,7 +23,8 @@ public class ShippingDiscountChain {
                 .toList();
     }
 
-    public record DiscountResult(double finalCost, List<String> appliedDiscounts) {}
+    public record DiscountResult(double finalCost, List<String> appliedDiscounts) {
+    }
 
     public DiscountResult applyDiscounts(double baseCost, List<CartItemDto> items, MembershipTier tier) {
         double cost = baseCost;
@@ -30,7 +34,10 @@ public class ShippingDiscountChain {
             if (rule.applies(items, tier)) {
                 cost = rule.apply(cost, items, tier);
                 applied.add(rule.description());
-                if (cost <= 0.0) { cost = 0.0; break; }
+                if (cost <= 0.0) {
+                    cost = 0.0;
+                    break;
+                }
             }
         }
 
