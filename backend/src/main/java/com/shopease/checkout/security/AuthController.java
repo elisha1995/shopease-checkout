@@ -38,7 +38,9 @@ public class AuthController {
     @GetMapping("/me")
     @Operation(summary = "Get current user profile", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserProfileResponse> me(Authentication authentication) {
-        var user = (UserEntity) authentication.getPrincipal();
+        if (!(authentication.getPrincipal() instanceof UserEntity user)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         return ResponseEntity.ok(authService.getProfile(user));
     }
 }

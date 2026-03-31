@@ -31,7 +31,9 @@ public class OrderController {
     @Operation(summary = "Checkout", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<CheckoutResponse> checkout(@Valid @RequestBody CheckoutRequest request,
                                                      Authentication authentication) {
-        var user = (UserEntity) authentication.getPrincipal();
+        if (!(authentication.getPrincipal() instanceof UserEntity user)) {
+            return ResponseEntity.status(401).build();
+        }
         var result = orderService.checkout(user, request);
         return result.success() ? ResponseEntity.ok(result) : ResponseEntity.badRequest().body(result);
     }
@@ -47,7 +49,9 @@ public class OrderController {
     @GetMapping("/orders")
     @Operation(summary = "Get current user's orders", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<OrderResponse>> getMyOrders(Authentication authentication) {
-        var user = (UserEntity) authentication.getPrincipal();
+        if (!(authentication.getPrincipal() instanceof UserEntity user)) {
+            return ResponseEntity.status(401).build();
+        }
         return ResponseEntity.ok(orderService.findByUser(user));
     }
 
