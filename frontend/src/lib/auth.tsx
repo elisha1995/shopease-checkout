@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react';
 
 interface AuthUser {
   token: string;
@@ -6,6 +6,7 @@ interface AuthUser {
   fullName: string;
   email: string;
   tier: string;
+  phone: string | null;
 }
 
 interface AuthContextType {
@@ -22,22 +23,19 @@ interface RegisterData {
   password: string;
   phone?: string;
   tier?: string;
-  notificationPreferences?: string[];
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+function loadStoredUser(): AuthUser | null {
+  const stored = sessionStorage.getItem('shopease_auth');
+  if (!stored) return null;
+  try { return JSON.parse(stored); } catch { return null; }
+}
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem('shopease_auth');
-    if (stored) {
-      try { setUser(JSON.parse(stored)); } catch { /* ignore */ }
-    }
-    setIsLoading(false);
-  }, []);
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
+  const [user, setUser] = useState<AuthUser | null>(loadStoredUser);
+  const [isLoading] = useState(false);
 
   const saveUser = (u: AuthUser) => {
     setUser(u);
@@ -78,13 +76,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.removeItem('shopease_cart');
   }, []);
 
+  const value = useMemo(
+    () => ({ user, login, register, logout, isLoading }),
+    [user, login, register, logout, isLoading]
+  );
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 }
 
+/* eslint-disable-next-line react-refresh/only-export-components -- hook must co-locate with its provider */
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be inside AuthProvider');

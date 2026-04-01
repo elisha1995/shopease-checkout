@@ -29,7 +29,6 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 export const api = {
   // Public
   getProducts: () => fetchJson<Product[]>('/products'),
-  getUsers: () => fetchJson<any[]>('/users'),
   getPaymentMethods: () => fetchJson<PaymentMethodInfo[]>('/payment/methods'),
   getCurrencies: () => fetchJson<CurrencyInfo[]>('/payment/currencies'),
 
@@ -46,6 +45,6 @@ export const api = {
       body: JSON.stringify(request),
     }),
 
-  getOrder: (id: string) => fetchJson<Order>(`/orders/${id}`),
+  getOrder: (orderNumber: string) => fetchJson<Order>(`/orders/${orderNumber}`),
   getMyOrders: () => fetchJson<Order[]>('/orders'),
 };
