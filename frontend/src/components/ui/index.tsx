@@ -38,32 +38,29 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button';
 
 /* ─── Card ──────────────────────────────────────────── */
-export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function Card({ className, ...props }: Readonly<React.HTMLAttributes<HTMLDivElement>>) {
   return (
     <div className={cn('rounded-lg border border-border bg-card text-card-foreground shadow-sm', className)} {...props} />
   );
 }
-export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function CardHeader({ className, ...props }: Readonly<React.HTMLAttributes<HTMLDivElement>>) {
   return <div className={cn('flex flex-col gap-1.5 p-6', className)} {...props} />;
 }
-export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
-  return <h3 className={cn('text-lg font-semibold leading-none tracking-tight', className)} {...props} />;
+export function CardTitle({ className, children, ...props }: Readonly<React.HTMLAttributes<HTMLHeadingElement>>) {
+  return <h3 className={cn('text-lg font-semibold leading-none tracking-tight', className)} {...props}>{children}</h3>;
 }
-export function CardDescription({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
+export function CardDescription({ className, ...props }: Readonly<React.HTMLAttributes<HTMLParagraphElement>>) {
   return <p className={cn('text-sm text-muted-foreground', className)} {...props} />;
 }
-export function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function CardContent({ className, ...props }: Readonly<React.HTMLAttributes<HTMLDivElement>>) {
   return <div className={cn('p-6 pt-0', className)} {...props} />;
-}
-export function CardFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex items-center p-6 pt-0', className)} {...props} />;
 }
 
 /* ─── Badge ─────────────────────────────────────────── */
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: 'default' | 'secondary' | 'outline' | 'success';
 }
-export function Badge({ className, variant = 'default', ...props }: BadgeProps) {
+export function Badge({ className, variant = 'default', ...props }: Readonly<BadgeProps>) {
   const variants = {
     default: 'bg-primary text-primary-foreground',
     secondary: 'bg-secondary text-secondary-foreground',
@@ -82,7 +79,7 @@ export function Badge({ className, variant = 'default', ...props }: BadgeProps) 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
 }
-export function Select({ className, label, children, ...props }: SelectProps) {
+export function Select({ className, label, children, ...props }: Readonly<SelectProps>) {
   return (
     <div className="flex flex-col gap-1.5">
       {label && <label className="text-sm font-medium text-foreground">{label}</label>}
@@ -101,6 +98,6 @@ export function Select({ className, label, children, ...props }: SelectProps) {
 }
 
 /* ─── Separator ─────────────────────────────────────── */
-export function Separator({ className, ...props }: React.HTMLAttributes<HTMLHRElement>) {
+export function Separator({ className, ...props }: Readonly<React.HTMLAttributes<HTMLHRElement>>) {
   return <hr className={cn('border-border', className)} {...props} />;
 }
