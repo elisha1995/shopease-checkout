@@ -3,13 +3,14 @@ import { useAuth } from '@/lib/auth';
 import { cn, TIER_COLORS } from '@/lib/utils';
 import { Badge } from '@/components/ui';
 import { ShoppingCart, CreditCard, Package, LogOut } from 'lucide-react';
+import React from "react";
 
 const NAV = [
   { to: '/', label: 'Cart', icon: ShoppingCart },
   { to: '/checkout', label: 'Checkout', icon: CreditCard },
 ];
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
   const location = useLocation();
   const { user, logout } = useAuth();
 
