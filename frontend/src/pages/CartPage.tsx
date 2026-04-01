@@ -35,6 +35,13 @@ function ProductCard({ product, inCart, onAdd, onUpdate, onRemove }: Readonly<{
 }>) {
   return (
     <Card className="overflow-hidden">
+      {product.imageUrl && (
+        <img
+          src={product.imageUrl}
+          alt={product.name}
+          className="h-40 w-full object-cover"
+        />
+      )}
       <CardContent className="p-4">
         <div>
           <p className="font-semibold">{product.name}</p>

@@ -1,34 +1,32 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button } from '@/components/ui';
-import { UserPlus, Loader2 } from 'lucide-react';
+import { UserPlus, Loader2, Eye, EyeOff } from 'lucide-react';
 
-const NOTIFICATION_OPTIONS = ['EMAIL', 'SMS', 'PUSH', 'SLACK'];
+const TIER_OPTIONS = [
+  { value: 'STANDARD', label: 'Standard', description: 'No shipping discount' },
+  { value: 'GOLD', label: 'Gold', description: '20% off shipping' },
+];
 
-export default function RegisterPage({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
+export default function RegisterPage({ onSwitchToLogin }: Readonly<{ onSwitchToLogin: () => void }>) {
   const { register } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [notificationPreferences, setNotificationPreferences] = useState<string[]>(['EMAIL']);
+  const [tier, setTier] = useState('STANDARD');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function toggleNotification(channel: string) {
-    setNotificationPreferences(prev =>
-      prev.includes(channel) ? prev.filter(c => c !== channel) : [...prev, channel]
-    );
-  }
-
-  async function handleRegister(e: React.FormEvent) {
+  async function handleRegister(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      await register({ fullName, email, password, phone: phone || undefined, notificationPreferences });
-    } catch (err: any) {
-      setError(err.message);
+      await register({ fullName, email, password, phone: phone || undefined, tier });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -56,8 +54,9 @@ export default function RegisterPage({ onSwitchToLogin }: { onSwitchToLogin: () 
           <CardContent>
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">Full Name</label>
+                <label htmlFor="reg-fullname" className="text-sm font-medium">Full Name</label>
                 <input
+                  id="reg-fullname"
                   type="text"
                   value={fullName}
                   onChange={e => setFullName(e.target.value)}
@@ -67,8 +66,9 @@ export default function RegisterPage({ onSwitchToLogin }: { onSwitchToLogin: () 
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">Email</label>
+                <label htmlFor="reg-email" className="text-sm font-medium">Email</label>
                 <input
+                  id="reg-email"
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
@@ -78,19 +78,30 @@ export default function RegisterPage({ onSwitchToLogin }: { onSwitchToLogin: () 
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className={inputClass}
-                  placeholder="••••••••"
-                  required
-                />
+                <label htmlFor="reg-password" className="text-sm font-medium">Password</label>
+                <div className="relative">
+                  <input
+                    id="reg-password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className={`${inputClass} pr-10`}
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">Phone <span className="text-muted-foreground font-normal">(optional)</span></label>
+                <label htmlFor="reg-phone" className="text-sm font-medium">Phone <span className="text-muted-foreground font-normal">(optional)</span></label>
                 <input
+                  id="reg-phone"
                   type="tel"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
@@ -98,26 +109,26 @@ export default function RegisterPage({ onSwitchToLogin }: { onSwitchToLogin: () 
                   placeholder="+233 24 000 0000"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium">Notification Preferences</label>
-                <div className="flex flex-wrap gap-2">
-                  {NOTIFICATION_OPTIONS.map(channel => (
+              <fieldset className="space-y-1.5 border-none p-0 m-0">
+                <legend className="text-sm font-medium">Membership Tier</legend>
+                <div className="flex gap-2">
+                  {TIER_OPTIONS.map(option => (
                     <button
-                      key={channel}
+                      key={option.value}
                       type="button"
-                      onClick={() => toggleNotification(channel)}
-                      className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors cursor-pointer ${
-                        notificationPreferences.includes(channel)
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-card text-muted-foreground border-border hover:bg-secondary/50'
+                      onClick={() => setTier(option.value)}
+                      className={`flex-1 rounded-lg border-2 p-3 text-center transition-all cursor-pointer ${
+                        tier === option.value
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border hover:border-primary/40'
                       }`}
                     >
-                      {channel}
+                      <p className="font-medium text-sm">{option.label}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{option.description}</p>
                     </button>
                   ))}
                 </div>
-              </div>
-
+              </fieldset>
               {error && <p className="text-sm text-destructive">{error}</p>}
 
               <Button type="submit" className="w-full" disabled={loading}>

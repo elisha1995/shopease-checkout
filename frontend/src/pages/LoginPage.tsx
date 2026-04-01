@@ -1,31 +1,24 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { TIER_COLORS } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Badge } from '@/components/ui';
-import { LogIn, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui';
+import { LogIn, Loader2, Eye, EyeOff } from 'lucide-react';
 
-const DEMO_ACCOUNTS = [
-  { email: 'kwame@shopease.dev', name: 'Kwame Asante', tier: 'STANDARD' },
-  { email: 'ama@shopease.dev', name: 'Ama Serwaa', tier: 'SILVER' },
-  { email: 'kofi@shopease.dev', name: 'Kofi Mensah', tier: 'GOLD' },
-  { email: 'abena@shopease.dev', name: 'Abena Osei', tier: 'PLATINUM' },
-];
-
-export default function LoginPage({ onSwitchToRegister }: { onSwitchToRegister?: () => void }) {
+export default function LoginPage({ onSwitchToRegister }: Readonly<{ onSwitchToRegister?: () => void }>) {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleLogin(e?: React.FormEvent, demoEmail?: string) {
-    e?.preventDefault();
+  async function handleLogin(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      await login(demoEmail || email, demoEmail ? 'demo1234' : password);
-    } catch (err: any) {
-      setError(err.message);
+      await login(email, password);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -50,8 +43,9 @@ export default function LoginPage({ onSwitchToRegister }: { onSwitchToRegister?:
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">Email</label>
+                <label htmlFor="login-email" className="text-sm font-medium">Email</label>
                 <input
+                  id="login-email"
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
@@ -60,14 +54,24 @@ export default function LoginPage({ onSwitchToRegister }: { onSwitchToRegister?:
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="w-full h-10 rounded-md border border-border bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="••••••••"
-                />
+                <label htmlFor="login-password" className="text-sm font-medium">Password</label>
+                <div className="relative">
+                  <input
+                    id="login-password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className="w-full h-10 rounded-md border border-border bg-card px-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
               {error && (
                 <p className="text-sm text-destructive">{error}</p>
@@ -77,29 +81,6 @@ export default function LoginPage({ onSwitchToRegister }: { onSwitchToRegister?:
                 Sign In
               </Button>
             </form>
-          </CardContent>
-        </Card>
-
-        {/* Demo Quick Login */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Demo Accounts</CardTitle>
-            <CardDescription>
-              Quick login to test different membership tiers (password: demo1234)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-2">
-            {DEMO_ACCOUNTS.map(account => (
-              <button
-                key={account.email}
-                onClick={() => handleLogin(undefined, account.email)}
-                disabled={loading}
-                className="flex flex-col items-start gap-1 rounded-lg border border-border p-3 text-left hover:bg-secondary/50 transition-colors cursor-pointer disabled:opacity-50"
-              >
-                <span className="text-sm font-medium">{account.name}</span>
-                <Badge className={TIER_COLORS[account.tier]}>{account.tier}</Badge>
-              </button>
-            ))}
           </CardContent>
         </Card>
 
