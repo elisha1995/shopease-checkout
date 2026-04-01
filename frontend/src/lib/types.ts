@@ -1,5 +1,5 @@
-export type MembershipTier = 'STANDARD' | 'SILVER' | 'GOLD' | 'PLATINUM';
-export type NotificationChannel = 'EMAIL' | 'SMS' | 'PUSH' | 'SLACK';
+export type MembershipTier = 'STANDARD' | 'GOLD';
+export type NotificationChannel = 'EMAIL' | 'SMS';
 export type CurrencyCode = 'USD' | 'GHS' | 'EUR';
 export type PaymentMethod = 'STRIPE' | 'PAYPAL' | 'CRYPTO';
 export type ShippingMethod = 'STANDARD' | 'EXPRESS';
@@ -46,7 +46,7 @@ export interface OrderNotification {
 }
 
 export interface Order {
-  id: string;
+  orderNumber: string;
   userId: string;
   items: { productName: string; price: number; quantity: number }[];
   subtotal: number;
@@ -62,15 +62,15 @@ export interface Order {
 }
 
 export interface CheckoutRequest {
-  userId?: string;
   items: CartItem[];
   paymentMethod: PaymentMethod;
   shippingMethod: ShippingMethod;
   currency: CurrencyCode;
+  notificationChannels: NotificationChannel[];
 }
 
 export interface CheckoutResult {
   success: boolean;
-  orderId: string;
+  orderNumber: string;
   message: string;
 }
