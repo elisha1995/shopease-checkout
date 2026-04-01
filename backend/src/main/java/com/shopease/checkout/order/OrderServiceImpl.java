@@ -71,19 +71,24 @@ public class OrderServiceImpl implements OrderService {
         // 5. Process payment (Factory → Strategy → Adapter)
         var processor = paymentFactory.create(request.paymentMethod());
         var paymentResult = processor.processPayment(
-                new PaymentRequest(orderNumber, totalInCurrency, currency, user.getEmail()));
+                new PaymentRequest(orderNumber, totalInCurrency, currency,
+                        user.getEmail()));
 
         if (!paymentResult.success()) {
-            return new CheckoutResponse(false, orderNumber, "Payment failed: " + paymentResult.providerMessage());
+            return new CheckoutResponse(false, orderNumber, "Payment failed: " +
+                    paymentResult.providerMessage());
         }
 
         // 6. Persist order
         var orderEntity = new OrderEntity();
         orderEntity.setOrderNumber(orderNumber);
         orderEntity.setUser(user);
-        orderEntity.setSubtotal(BigDecimal.valueOf(subtotalUsd).setScale(2, RoundingMode.HALF_UP));
-        orderEntity.setShippingCost(BigDecimal.valueOf(shippingQuote.finalCost()).setScale(2, RoundingMode.HALF_UP));
-        orderEntity.setTotal(BigDecimal.valueOf(totalInCurrency).setScale(2, RoundingMode.HALF_UP));
+        orderEntity.setSubtotal(BigDecimal.valueOf(subtotalUsd).setScale(2,
+                RoundingMode.HALF_UP));
+        orderEntity.setShippingCost(BigDecimal.valueOf(shippingQuote.finalCost()).setScale(2,
+                RoundingMode.HALF_UP));
+        orderEntity.setTotal(BigDecimal.valueOf(totalInCurrency).setScale(2,
+                RoundingMode.HALF_UP));
         orderEntity.setCurrency(currency);
         orderEntity.setPaymentMethod(request.paymentMethod());
         orderEntity.setTransactionId(paymentResult.transactionId());
@@ -100,26 +105,29 @@ public class OrderServiceImpl implements OrderService {
                 orderEntity.getId(), orderNumber,
                 user.getId().toString(), user.getFullName(),
                 user.getEmail(), user.getPhone(),
-                user.getNotificationChannels(),
+                request.notificationChannels(),
                 totalInCurrency, currency,
                 request.paymentMethod(), paymentResult.transactionId()
         ));
 
-        return new CheckoutResponse(true, orderNumber, "Order placed successfully via " + paymentResult.provider());
+        return new CheckoutResponse(true, orderNumber, "Order placed successfully via " +
+                paymentResult.provider());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<OrderResponse> findByOrderNumber(String orderNumber) {
         return orderRepository.findByOrderNumber(orderNumber)
-                .map(order -> OrderMapper.toResponse(order, notificationLogRepository.findByOrderId(order.getId())));
+                .map(order -> OrderMapper.toResponse(order,
+                        notificationLogRepository.findByOrderId(order.getId())));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<OrderResponse> findByUser(UserEntity user) {
         return orderRepository.findByUserIdOrderByCreatedAtDesc(user.getId()).stream()
-                .map(order -> OrderMapper.toResponse(order, notificationLogRepository.findByOrderId(order.getId())))
+                .map(order -> OrderMapper.toResponse(order,
+                        notificationLogRepository.findByOrderId(order.getId())))
                 .toList();
     }
 
