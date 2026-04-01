@@ -1,10 +1,11 @@
 package com.shopease.checkout.payment;
 
-import com.shopease.checkout.common.model.Currency;
 import com.shopease.checkout.payment.adapter.CryptoPaymentAdapter;
 import com.shopease.checkout.payment.adapter.PayPalPaymentAdapter;
 import com.shopease.checkout.payment.adapter.StripePaymentAdapter;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 
@@ -18,25 +19,12 @@ class PaymentProcessorFactoryTest {
             new CryptoPaymentAdapter()
     ));
 
-    @Test
-    void shouldReturnStripeProcessor() {
-        PaymentProcessor processor = factory.create("STRIPE");
+    @ParameterizedTest
+    @ValueSource(strings = {"STRIPE", "PAYPAL", "CRYPTO"})
+    void shouldReturnProcessorForKey(String key) {
+        PaymentProcessor processor = factory.create(key);
         assertNotNull(processor);
-        assertEquals("STRIPE", processor.getKey());
-    }
-
-    @Test
-    void shouldReturnPayPalProcessor() {
-        PaymentProcessor processor = factory.create("PAYPAL");
-        assertNotNull(processor);
-        assertEquals("PAYPAL", processor.getKey());
-    }
-
-    @Test
-    void shouldReturnCryptoProcessor() {
-        PaymentProcessor processor = factory.create("CRYPTO");
-        assertNotNull(processor);
-        assertEquals("CRYPTO", processor.getKey());
+        assertEquals(key, processor.getKey());
     }
 
     @Test
@@ -47,7 +35,8 @@ class PaymentProcessorFactoryTest {
 
     @Test
     void shouldThrowOnUnknownMethod() {
-        var ex = assertThrows(IllegalArgumentException.class, () -> factory.create("BITCOIN"));
+        var ex = assertThrows(IllegalArgumentException.class,
+                () -> factory.create("BITCOIN"));
         assertTrue(ex.getMessage().contains("Unknown payment method"));
         assertTrue(ex.getMessage().contains("BITCOIN"));
     }
