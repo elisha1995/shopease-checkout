@@ -77,11 +77,6 @@ public class OrderEntity {
         item.setOrder(this);
     }
 
-    public void addNotification(NotificationLogEntity log) {
-        notifications.add(log);
-        log.setOrder(this);
-    }
-
     @PreUpdate
     void onUpdate() {
         this.updatedAt = Instant.now();

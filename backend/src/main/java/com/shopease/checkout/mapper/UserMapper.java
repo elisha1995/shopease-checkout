@@ -1,13 +1,10 @@
 package com.shopease.checkout.mapper;
 
 import com.shopease.checkout.common.model.MembershipTier;
-import com.shopease.checkout.common.model.NotificationChannel;
 import com.shopease.checkout.dto.request.RegisterRequest;
 import com.shopease.checkout.dto.response.AuthResponse;
 import com.shopease.checkout.dto.response.UserProfileResponse;
 import com.shopease.checkout.entity.UserEntity;
-
-import java.util.List;
 
 /**
  * Manual mapper — no library dependency, full control.
@@ -25,11 +22,6 @@ public final class UserMapper {
         entity.setPasswordHash(encodedPassword);
         entity.setPhone(request.phone());
         entity.setTier(request.tier() != null ? request.tier() : MembershipTier.STANDARD);
-        entity.setNotificationChannels(
-                request.notificationPreferences() != null
-                        ? request.notificationPreferences()
-                        : List.of(NotificationChannel.EMAIL)
-        );
         return entity;
     }
 
@@ -39,7 +31,8 @@ public final class UserMapper {
                 entity.getId().toString(),
                 entity.getFullName(),
                 entity.getEmail(),
-                entity.getTier().name()
+                entity.getTier().name(),
+                entity.getPhone()
         );
     }
 
@@ -49,8 +42,7 @@ public final class UserMapper {
                 entity.getFullName(),
                 entity.getEmail(),
                 entity.getPhone(),
-                entity.getTier().name(),
-                entity.getNotificationChannels().stream().map(Enum::name).toList()
+                entity.getTier().name()
         );
     }
 }

@@ -2,13 +2,13 @@ package com.shopease.checkout.entity;
 
 import com.shopease.checkout.common.config.UUIDv7;
 import com.shopease.checkout.common.model.MembershipTier;
-import com.shopease.checkout.common.model.NotificationChannel;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -33,11 +33,9 @@ public class UserEntity {
     private String phone;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)
     private MembershipTier tier = MembershipTier.STANDARD;
-
-    @Column(name = "notification_preferences", nullable = false)
-    private String notificationPreferences = "EMAIL";
 
     @Setter(lombok.AccessLevel.NONE)
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -46,25 +44,6 @@ public class UserEntity {
     @Setter(lombok.AccessLevel.NONE)
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt = Instant.now();
-
-    // ─── Helpers ──────────────────────────────────────
-
-    public List<NotificationChannel> getNotificationChannels() {
-        if (notificationPreferences == null || notificationPreferences.isBlank()) {
-            return List.of(NotificationChannel.EMAIL);
-        }
-        return java.util.Arrays.stream(notificationPreferences.split(","))
-                .map(String::trim)
-                .map(NotificationChannel::valueOf)
-                .toList();
-    }
-
-    public void setNotificationChannels(List<NotificationChannel> channels) {
-        this.notificationPreferences = channels.stream()
-                .map(Enum::name)
-                .reduce((a, b) -> a + "," + b)
-                .orElse("EMAIL");
-    }
 
     @PreUpdate
     void onUpdate() {
