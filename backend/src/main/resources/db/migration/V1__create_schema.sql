@@ -12,10 +12,8 @@ CREATE TABLE users (
     full_name                VARCHAR(150) NOT NULL,
     phone                    VARCHAR(20),
     tier                     membership_tier NOT NULL DEFAULT 'STANDARD',
-    notification_preferences notification_channel[] NOT NULL DEFAULT '{EMAIL}',
     created_at               TIMESTAMPTZ  NOT NULL DEFAULT now(),
-    updated_at               TIMESTAMPTZ  NOT NULL DEFAULT now(),
-
+    updated_at               TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_users_email ON users(email);
