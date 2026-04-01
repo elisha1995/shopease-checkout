@@ -27,7 +27,7 @@ function ProtectedRoutes() {
       <Routes>
         <Route path="/" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/confirmation/:orderId" element={<ConfirmationPage />} />
+        <Route path="/confirmation/:orderNumber" element={<ConfirmationPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>
