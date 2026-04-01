@@ -6,6 +6,7 @@ import com.shopease.checkout.notification.NotificationResult;
 import com.shopease.checkout.notification.NotificationSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ import java.util.Base64;
 
 /**
  * Real Hubtel SMS integration.
- * API docs: https://developers.hubtel.com/reference/send-message
+ * API docs: <a href="https://developers.hubtel.com/reference/send-message">...</a>
  */
 @Component
 public class HubtelSmsSender implements NotificationSender {
@@ -30,16 +31,24 @@ public class HubtelSmsSender implements NotificationSender {
     private final String authHeader;
     private final HttpClient httpClient;
 
+    @Autowired
     public HubtelSmsSender(
             @Value("${hubtel.base-url}") String baseUrl,
             @Value("${hubtel.client-id}") String clientId,
             @Value("${hubtel.client-secret}") String clientSecret,
             @Value("${hubtel.from}") String from) {
+        this(baseUrl, from,
+                "Basic " + Base64.getEncoder()
+                        .encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8)),
+                HttpClient.newHttpClient());
+    }
+
+    // Package-private constructor for testing with a mock HttpClient
+    HubtelSmsSender(String baseUrl, String from, String authHeader, HttpClient httpClient) {
         this.baseUrl = baseUrl;
         this.from = from;
-        this.authHeader = "Basic " + Base64.getEncoder()
-                .encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8));
-        this.httpClient = HttpClient.newHttpClient();
+        this.authHeader = authHeader;
+        this.httpClient = httpClient;
     }
 
     @Override

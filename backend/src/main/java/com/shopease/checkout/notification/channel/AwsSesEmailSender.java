@@ -6,6 +6,7 @@ import com.shopease.checkout.notification.NotificationResult;
 import com.shopease.checkout.notification.NotificationSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
@@ -19,17 +20,24 @@ import software.amazon.awssdk.services.ses.model.SesException;
 public class AwsSesEmailSender implements NotificationSender {
 
     private static final Logger log = LoggerFactory.getLogger(AwsSesEmailSender.class);
+    private static final String CHARSET = "UTF-8";
 
     private final SesClient sesClient;
     private final String fromEmail;
 
+    @Autowired
     public AwsSesEmailSender(
             @Value("${aws.ses.region}") String region,
             @Value("${aws.ses.from-email}") String fromEmail) {
-        this.sesClient = SesClient.builder()
+        this(SesClient.builder()
                 .region(Region.of(region))
                 .credentialsProvider(DefaultCredentialsProvider.builder().build())
-                .build();
+                .build(), fromEmail);
+    }
+
+    // Package-private constructor for testing with a mock SesClient
+    AwsSesEmailSender(SesClient sesClient, String fromEmail) {
+        this.sesClient = sesClient;
         this.fromEmail = fromEmail;
     }
 
@@ -45,9 +53,13 @@ public class AwsSesEmailSender implements NotificationSender {
                     .source(fromEmail)
                     .destination(d -> d.toAddresses(payload.recipientEmail()))
                     .message(m -> m
-                            .subject(s -> s.data(payload.subject()).charset("UTF-8"))
-                            .body(b -> b
-                                    .text(t -> t.data(payload.body()).charset("UTF-8"))))
+                            .subject(s -> s.data(payload.subject()).charset(CHARSET))
+                            .body(b -> {
+                                b.text(t -> t.data(payload.body()).charset(CHARSET));
+                                if (payload.htmlBody() != null) {
+                                    b.html(h -> h.data(payload.htmlBody()).charset(CHARSET));
+                                }
+                            }))
                     .build();
 
             SendEmailResponse response = sesClient.sendEmail(request);
@@ -60,7 +72,8 @@ public class AwsSesEmailSender implements NotificationSender {
                     "Email sent via AWS SES (MessageId: " + messageId + ")", 1
             );
         } catch (SesException e) {
-            log.error("[AWS SES] Failed to send email to {}: {}", payload.recipientEmail(), e.awsErrorDetails().errorMessage());
+            log.error("[AWS SES] Failed to send email to {}: {}", payload.recipientEmail(),
+                    e.awsErrorDetails().errorMessage());
             return new NotificationResult(
                     NotificationChannel.EMAIL, false,
                     "SES error: " + e.awsErrorDetails().errorMessage(), 1
