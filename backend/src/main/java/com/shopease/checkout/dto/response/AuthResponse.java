@@ -5,6 +5,7 @@ public record AuthResponse(
         String userId,
         String fullName,
         String email,
-        String tier
+        String tier,
+        String phone
 ) {
 }

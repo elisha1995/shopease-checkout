@@ -1,6 +1,7 @@
 package com.shopease.checkout.dto.request;
 
 import com.shopease.checkout.common.model.Currency;
+import com.shopease.checkout.common.model.NotificationChannel;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +19,9 @@ public record CheckoutRequest(
         String shippingMethod,
 
         @NotNull(message = "Currency is required")
-        Currency currency
+        Currency currency,
+
+        @NotEmpty(message = "At least one notification channel is required")
+        List<NotificationChannel> notificationChannels
 ) {
 }
