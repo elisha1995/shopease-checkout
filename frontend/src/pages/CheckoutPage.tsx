@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/auth';
 import { api } from '@/lib/api';
-import type { PaymentMethodInfo, CurrencyInfo, CartItem, ShippingQuote, PaymentMethod, CurrencyCode } from '@/lib/types';
+import type { PaymentMethodInfo, CurrencyInfo, CartItem, ShippingQuote, PaymentMethod, CurrencyCode, NotificationChannel } from '@/lib/types';
 import { CURRENCY_SYMBOLS } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Badge, Separator } from '@/components/ui';
-import { CreditCard, Wallet, Bitcoin, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, Button, Separator } from '@/components/ui';
+import { CreditCard, Wallet, Bitcoin, Loader2, CheckCircle, XCircle, Mail, MessageSquare } from 'lucide-react';
 
 const PAYMENT_ICONS: Record<string, typeof CreditCard> = {
   STRIPE: CreditCard,
@@ -20,10 +21,13 @@ interface CartState {
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const hasPhone = Boolean(user?.phone);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodInfo[]>([]);
   const [currencies, setCurrencies] = useState<CurrencyInfo[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>('STRIPE');
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('USD');
+  const [notificationChannels, setNotificationChannels] = useState<NotificationChannel[]>(['EMAIL']);
   const [cartState, setCartState] = useState<CartState | null>(null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +51,12 @@ export default function CheckoutPage() {
   const totalConverted = Math.round(totalUsd * rate * 100) / 100;
   const symbol = CURRENCY_SYMBOLS[selectedCurrency] || '$';
 
+  function toggleChannel(channel: NotificationChannel) {
+    setNotificationChannels(prev =>
+      prev.includes(channel) ? prev.filter(c => c !== channel) : [...prev, channel]
+    );
+  }
+
   async function handleCheckout() {
     setProcessing(true);
     setError(null);
@@ -56,15 +66,16 @@ export default function CheckoutPage() {
         paymentMethod: selectedPayment,
         shippingMethod: cartState!.shippingMethod as 'STANDARD' | 'EXPRESS',
         currency: selectedCurrency,
+        notificationChannels,
       });
       if (result.success) {
         sessionStorage.removeItem('shopease_cart');
-        navigate(`/confirmation/${result.orderId}`);
+        navigate(`/confirmation/${result.orderNumber}`);
       } else {
         setError(result.message);
       }
-    } catch (e: any) {
-      setError(e.message || 'Checkout failed');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Checkout failed');
     } finally {
       setProcessing(false);
     }
@@ -135,6 +146,48 @@ export default function CheckoutPage() {
         </CardContent>
       </Card>
 
+      {/* Notification Preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Order Notifications</CardTitle>
+          <CardDescription>How would you like to be notified about this order?</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-3">
+            {([
+              { channel: 'EMAIL' as NotificationChannel, label: 'Email', icon: Mail, disabled: false },
+              { channel: 'SMS' as NotificationChannel, label: 'SMS', icon: MessageSquare, disabled: !hasPhone },
+            ]).map(({ channel, label, icon: Icon, disabled }) => {
+              const selected = !disabled && notificationChannels.includes(channel);
+              let buttonStyle = 'border-border hover:border-primary/40 cursor-pointer';
+              if (disabled) buttonStyle = 'border-border opacity-50 cursor-not-allowed';
+              else if (selected) buttonStyle = 'border-primary bg-primary/5 cursor-pointer';
+              const iconStyle = selected ? 'bg-primary text-primary-foreground' : 'bg-secondary';
+              return (
+              <button
+                key={channel}
+                onClick={() => !disabled && toggleChannel(channel)}
+                disabled={disabled}
+                className={`flex-1 flex items-center gap-3 rounded-lg border-2 p-4 text-left transition-all ${buttonStyle}`}
+              >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconStyle}`}>
+                  <Icon size={20} />
+                </div>
+                <div>
+                  <span className="font-medium">{label}</span>
+                  {disabled && <p className="text-xs text-muted-foreground">No phone number on file</p>}
+                </div>
+                {selected && <CheckCircle size={20} className="ml-auto text-primary" />}
+              </button>
+              );
+            })}
+          </div>
+          {notificationChannels.length === 0 && (
+            <p className="text-sm text-destructive mt-2">Select at least one notification channel</p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Order Summary */}
       <Card>
         <CardHeader><CardTitle>Order Summary</CardTitle></CardHeader>
@@ -165,7 +218,7 @@ export default function CheckoutPage() {
               <XCircle size={16} /> {error}
             </div>
           )}
-          <Button size="lg" className="w-full mt-2" onClick={handleCheckout} disabled={processing}>
+          <Button size="lg" className="w-full mt-2" onClick={handleCheckout} disabled={processing || notificationChannels.length === 0}>
             {processing
               ? <><Loader2 size={16} className="animate-spin" /> Processing...</>
               : <>Pay {symbol}{(selectedCurrency === 'USD' ? totalUsd : totalConverted).toFixed(2)} with {selectedPayment}</>
