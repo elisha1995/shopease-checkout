@@ -6,6 +6,7 @@ public record NotificationPayload(
         String recipientPhone,
         String subject,
         String body,
+        String htmlBody,
         String orderId
 ) {
 }
